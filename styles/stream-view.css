@@ -61,9 +61,14 @@ body.msv-display.msv-chat #sidebar-content > #chat {
 body.msv-display #sta2e-hud-container {
   left: calc((100vw - var(--msv-chat-width, 0px)) / 2) !important;
 }
-/* Companion panes that leave Dice So Nice's dice to another client. */
-body.msv-hide-dice #dice-box-canvas {
+/* Companion panes that leave Dice So Nice's dice and the pause banner to another client. */
+body.msv-defer-shared #dice-box-canvas,
+body.msv-defer-shared #pause {
   display: none !important;
+}
+/* The pause banner spans the panes, not the chat column. */
+body.msv-display #pause {
+  width: calc(100% - var(--msv-chat-width, 0px));
 }
 /* The companion's chat layer is a transparent page over the panes. */
 html:has(body.msv-sidebar),

@@ -25,8 +25,9 @@ export function syncChrome() {
   if (!Role.isDisplay) return;
   const width = Role.showsChrome ? chatColumnWidth() : 0;
   document.body.classList.toggle("msv-chat", width > 0);
-  // Dice So Nice rolls once across the whole stream: on the companion's chat layer when it has one, else on pane 1.
-  document.body.classList.toggle("msv-hide-dice", Role.isPane && ((chatColumnWidth() > 0) || !Role.isLead));
+  // Dice So Nice rolls and the "Game Paused" banner show once across the whole stream: on the companion's chat layer
+  // when it has one, else on pane 1. Other companion panes hide theirs.
+  document.body.classList.toggle("msv-defer-shared", Role.isPane && ((chatColumnWidth() > 0) || !Role.isLead));
   // Companion panes size their own window; only the full-window clients reserve the column.
   document.body.style.setProperty("--msv-chat-width", `${width}px`);
   if (width && ui.sidebar) {
