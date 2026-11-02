@@ -1,0 +1,241 @@
+/* Stream clients never scroll: the canvas always fills the window, and anything poking past it (module overlays,
+   Foundry's minimum-size layout in narrow companion panes) would otherwise add scrollbars to the capture. */
+html:has(body.msv-display),
+body.msv-display {
+  overflow: hidden !important;
+}
+body.msv-display::-webkit-scrollbar {
+  display: none;
+}
+
+/* Stream display: hide the Foundry UI and leave only the canvas, which is drawn as panes. */
+body.msv-display #interface,
+body.msv-display #camera-views,
+body.msv-display #notifications {
+  display: none !important;
+}
+/* Other windows (the combat tracker other modules pop out, the login Player Configuration, module panels) stay off
+   the stream. Only images and journals the GM shows are let through. */
+body.msv-display > .application:not(.image-popout):not(.journal-sheet),
+body.msv-display > .app:not(.image-popout):not(.journal-sheet) {
+  display: none !important;
+}
+/* In the companion app, the app draws shared images, journals and the hold card over the whole window, so panes
+   keep them hidden (pane 1 still opens them, to pass their content on). */
+body.msv-companion .image-popout,
+body.msv-companion .journal-sheet,
+body.msv-companion #msv-carousel,
+body.msv-companion #msv-hold p {
+  display: none !important;
+}
+/* Pane cameras don't match the mouse, so the display is view-only. */
+body.msv-display #board {
+  pointer-events: none;
+}
+
+/* Combat carousel along the top middle of the stream. */
+#msv-carousel {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 24px);
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 40px;
+  color: #fff;
+  font-family: var(--font-body, sans-serif);
+  pointer-events: none;
+}
+#msv-carousel .msv-round {
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+#msv-carousel ol {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#msv-carousel li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 64px;
+  opacity: 0.75;
+}
+#msv-carousel li img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: #111;
+}
+#msv-carousel li .msv-name {
+  max-width: 100%;
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 0 3px #000;
+}
+#msv-carousel li.active {
+  width: 84px;
+  opacity: 1;
+}
+#msv-carousel li.active img {
+  width: 64px;
+  height: 64px;
+  border: 3px solid #f0c040;
+  box-shadow: 0 0 10px #f0c040;
+}
+#msv-carousel li.active .msv-name {
+  font-size: 13px;
+  font-weight: bold;
+}
+#msv-carousel li.friendly img {
+  border-color: #3fa7e0;
+}
+#msv-carousel li.hostile img {
+  border-color: #d2423c;
+}
+#msv-carousel li.neutral img {
+  border-color: #e0c050;
+}
+#msv-carousel li.acted {
+  opacity: 0.4;
+}
+#msv-carousel li.defeated img {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+/* Hold card: covers the stream while the GM has it on hold. */
+#msv-hold {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: #000;
+  pointer-events: none;
+}
+#msv-hold p {
+  margin: 0;
+  padding: 0 1em;
+  color: #fff;
+  font-family: var(--font-body, sans-serif);
+  font-size: clamp(32px, 6vw, 96px);
+  font-weight: bold;
+  text-align: center;
+}
+body.msv-hold #msv-carousel {
+  display: none;
+}
+
+#players .msv-stream-user {
+  flex: 0 0 auto;
+  margin-left: 4px;
+}
+
+.msv-pane-panel .msv-slots {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.msv-pane-panel .msv-slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border: 1px dashed transparent;
+  border-radius: 4px;
+}
+.msv-pane-panel .msv-slot:hover {
+  border-color: var(--color-border-light-highlight, #888);
+}
+.msv-pane-panel .msv-slot-number {
+  flex: 0 0 1.25rem;
+  text-align: center;
+  font-weight: bold;
+}
+.msv-pane-panel .msv-slot-img {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border: none;
+  display: grid;
+  place-items: center;
+}
+.msv-pane-panel .msv-count {
+  display: flex;
+  gap: 4px;
+}
+.msv-pane-panel .msv-count button {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+}
+.msv-pane-panel button.active {
+  border-color: var(--color-border-highlight, #ff6400);
+  box-shadow: 0 0 6px var(--color-shadow-highlight, #ff6400);
+}
+.msv-pane-panel .msv-slot-mode {
+  flex: 0 0 140px;
+  min-width: 0;
+}
+.msv-pane-panel .msv-slot-token {
+  flex: 1;
+  min-width: 0;
+}
+.msv-pane-panel .msv-slot-zoom {
+  flex: 0 0 48px;
+  width: 48px;
+  text-align: center;
+}
+.msv-pane-panel .msv-stream-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.msv-pane-panel .msv-hold {
+  display: flex;
+  gap: 6px;
+}
+.msv-pane-panel .msv-hold button {
+  flex: 0 0 auto;
+  width: auto;
+  white-space: nowrap;
+}
+.msv-pane-panel .msv-hold input {
+  flex: 1;
+}
+.msv-pane-panel .msv-slot-warning {
+  color: var(--color-level-warning, #ee9b3a);
+}
+.msv-pane-panel .msv-stream-actions {
+  display: flex;
+  gap: 6px;
+}
+.msv-pane-panel .msv-slot button {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+}

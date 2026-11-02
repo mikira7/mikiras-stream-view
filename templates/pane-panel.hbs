@@ -1,0 +1,86 @@
+<div class="msv-panel-body">
+  <p class="hint">
+    {{#if streamUser}}
+      {{localize "MSV.Panel.StreamUserIs" user=streamUser}}
+    {{else}}
+      <i class="fa-solid fa-triangle-exclamation"></i> {{localize "MSV.Panel.NoStreamUser"}}
+    {{/if}}
+  </p>
+
+  <div class="form-group">
+    <label>{{localize "MSV.Panel.Count"}}</label>
+    <div class="msv-count">
+      {{#each countButtons}}
+      <button type="button" data-action="setCount" data-count="{{n}}" class="{{#if active}}active{{/if}}"
+              aria-pressed="{{#if active}}true{{else}}false{{/if}}">{{n}}</button>
+      {{/each}}
+    </div>
+  </div>
+
+  <ol class="msv-slots">
+    {{#each panes}}
+    <li class="msv-slot" data-index="{{index}}">
+      <span class="msv-slot-number">{{number}}</span>
+      {{#if img}}
+        <img class="msv-slot-img" src="{{img}}" alt="">
+      {{else}}
+        <i class="msv-slot-img {{icon}}"></i>
+      {{/if}}
+      <select class="msv-slot-mode" name="slots.{{index}}.mode" aria-label="{{localize "MSV.Panel.Mode"}}">
+        {{selectOptions ../modeChoices selected=mode}}
+      </select>
+      {{#if isToken}}
+      <select class="msv-slot-token" name="slots.{{index}}.tokenId" aria-label="{{localize "MSV.Panel.Token"}}">
+        {{selectOptions choices selected=tokenId blank=(localize "MSV.Panel.Auto")}}
+      </select>
+      {{else}}
+      <span class="msv-slot-token"></span>
+      {{/if}}
+      <input class="msv-slot-zoom" type="number" name="slots.{{index}}.zoom" min="4" max="40" step="1" value="{{zoom}}"
+             placeholder="{{../defaultZoom}}" data-tooltip="MSV.Panel.ZoomHint" aria-label="{{localize "MSV.Panel.Zoom"}}">
+      {{#if warning}}
+        <i class="msv-slot-warning fa-solid fa-triangle-exclamation" data-tooltip="{{warning}}"></i>
+      {{/if}}
+      {{#if isToken}}
+      <button type="button" class="icon fa-solid fa-crosshairs" data-action="useSelected" data-index="{{index}}"
+              data-tooltip="MSV.Panel.UseSelected" aria-label="{{localize "MSV.Panel.UseSelected"}}"></button>
+      {{/if}}
+      <button type="button" class="icon fa-solid fa-rotate-left" data-action="clearSlot" data-index="{{index}}"
+              data-tooltip="MSV.Panel.Clear" aria-label="{{localize "MSV.Panel.Clear"}}"></button>
+    </li>
+    {{/each}}
+  </ol>
+
+  <p class="hint">{{localize "MSV.Panel.Footer" scene=sceneName}}</p>
+
+  <fieldset class="msv-stream-controls">
+    <legend>{{localize "MSV.Panel.StreamControls"}}</legend>
+    {{#if multiLevel}}
+    <div class="form-group">
+      <label>{{localize "MSV.Panel.StreamLevel"}}</label>
+      <select name="streamLevel" data-tooltip="MSV.Panel.StreamLevelHint">
+        {{selectOptions levelChoices selected=streamLevel localize=true}}
+      </select>
+    </div>
+    {{/if}}
+    <div class="msv-hold">
+      <button type="button" data-action="toggleHold" class="{{#if hold}}active{{/if}}" aria-pressed="{{#if hold}}true{{else}}false{{/if}}">
+        {{#if hold}}
+          <i class="fa-solid fa-play"></i> {{localize "MSV.Panel.Resume"}}
+        {{else}}
+          <i class="fa-solid fa-pause"></i> {{localize "MSV.Panel.Hold"}}
+        {{/if}}
+      </button>
+      <input type="text" name="holdMessage" value="{{holdMessage}}" placeholder="{{localize "MSV.Panel.HoldMessage"}}"
+             aria-label="{{localize "MSV.Panel.HoldMessage"}}">
+    </div>
+    <div class="msv-stream-actions">
+      <button type="button" data-action="clearImages">
+        <i class="fa-solid fa-image"></i> {{localize "MSV.Panel.ClearImages"}}
+      </button>
+      <button type="button" data-action="clearJournals">
+        <i class="fa-solid fa-book-open"></i> {{localize "MSV.Panel.ClearJournals"}}
+      </button>
+    </div>
+  </fieldset>
+</div>
