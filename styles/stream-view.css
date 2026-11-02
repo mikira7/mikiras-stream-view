@@ -8,10 +8,69 @@ body.msv-display::-webkit-scrollbar {
   display: none;
 }
 
-/* Stream display: hide the Foundry UI and leave only the canvas, which is drawn as panes. */
-body.msv-display #interface,
+/* Stream display: hide Foundry's UI except the chat column, and the STA 2e Toolkit's calendar and Momentum/Threat
+   tracker on clients that show them. The toolkit's combat HUD never shows. */
 body.msv-display #camera-views,
-body.msv-display #notifications {
+body.msv-display #notifications,
+body.msv-display #sta2e-combat-hud {
+  display: none !important;
+}
+body.msv-display #interface {
+  pointer-events: none;
+}
+body.msv-display #interface > :not(#ui-right):not(#sta2e-hud-container):not(#sta2e-pool-tracker),
+body.msv-display #ui-right > :not(#sidebar),
+body.msv-display:not(.msv-chat) #sidebar,
+body.msv-display #sidebar > nav.tabs,
+body.msv-display #sidebar-content > :not(#chat),
+body.msv-display #chat .chat-form,
+body.msv-display #chat-message,
+body.msv-display #chat-controls,
+body.msv-display #chat-notifications,
+body.msv-display:not(.msv-chrome) #sta2e-hud-container,
+body.msv-display:not(.msv-chrome) #sta2e-pool-tracker {
+  display: none !important;
+}
+body.msv-display.msv-chat {
+  --sidebar-width: var(--msv-chat-width);
+}
+/* Foundry transforms #ui-right (for its collapse animation), which would make it, not the window, the box the fixed
+   chat column positions against. Without a canvas #ui-right is 0x0, so the column would vanish. */
+body.msv-display.msv-chat #ui-right {
+  transform: none !important;
+}
+body.msv-display.msv-chat #sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  /* Fill the window top to bottom, so the newest messages stay in view. */
+  height: auto !important;
+  max-height: none !important;
+  width: var(--msv-chat-width);
+}
+body.msv-display.msv-chat #sidebar-content {
+  width: 100% !important;
+  height: 100%;
+}
+/* Always the chat, whichever sidebar tab Foundry last remembered as active. */
+body.msv-display.msv-chat #sidebar-content > #chat {
+  display: flex !important;
+}
+/* The calendar sits at the top centre of the pane area, not of the whole window. */
+body.msv-display #sta2e-hud-container {
+  left: calc((100vw - var(--msv-chat-width, 0px)) / 2) !important;
+}
+/* Companion panes that leave Dice So Nice's dice to another client. */
+body.msv-hide-dice #dice-box-canvas {
+  display: none !important;
+}
+/* The companion's chat layer is a transparent page over the panes. */
+html:has(body.msv-sidebar),
+body.msv-sidebar {
+  background: transparent !important;
+}
+body.msv-sidebar #board {
   display: none !important;
 }
 /* Other windows (the combat tracker other modules pop out, the login Player Configuration, module panels) stay off
@@ -36,8 +95,9 @@ body.msv-display #board {
 /* Combat carousel along the top middle of the stream. */
 #msv-carousel {
   position: fixed;
-  top: 8px;
-  left: 50%;
+  /* Below the STA calendar when it's there, centred over the panes. */
+  top: max(8px, var(--msv-top-inset, 0px));
+  left: calc((100vw - var(--msv-chat-width, 0px)) / 2);
   transform: translateX(-50%);
   z-index: 100;
   display: flex;

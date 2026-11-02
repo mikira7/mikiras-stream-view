@@ -4,6 +4,7 @@ import { paneView } from "./vision.js";
 import { getGmView } from "./gm-view.js";
 import { syncLevel } from "./levels.js";
 import { Role } from "../role.js";
+import { chatColumnWidth } from "./chrome.js";
 
 /** Key under which other tokens' vision sources are suppressed while a pane is drawn. */
 const SUPPRESSION_KEY = MODULE_ID;
@@ -146,9 +147,11 @@ export class MultiView {
     syncLevel();
 
     // In the companion app each client draws only its own pane, filling the window; the app lays the windows out.
+    // In single-window mode the panes leave room on the right for the chat column.
     const { width, height } = renderer.screen;
     const count = Role.isPane ? 1 : setting("panes").count;
-    const rects = Role.isPane ? [new PIXI.Rectangle(0, 0, width, height)] : layoutRects(count, width, height, GAP);
+    const rects = Role.isPane ? [new PIXI.Rectangle(0, 0, width, height)]
+      : layoutRects(count, Math.max(width - chatColumnWidth(), 1), height, GAP);
     this.#syncPanes(count, width, height);
 
     // On hold, the panes aren't drawn at all; the hold card covers the window.

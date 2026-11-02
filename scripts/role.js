@@ -9,6 +9,8 @@ const PANE_PREFIX = "pane-";
  * - "gm": a GM client, controls the display
  * - "display": the stream user's window, drawn as a grid of token viewpoints
  * - "pane": one pane inside the companion app, a full Foundry client drawing just that pane
+ * - "sidebar": in the companion app, a transparent client over the whole window that never draws the scene, showing
+ *   the chat column, the STA calendar, the Momentum/Threat tracker and Dice So Nice's dice
  * - "player": anyone else, untouched
  */
 export const Role = {
@@ -26,6 +28,7 @@ export const Role = {
       this.current = "pane";
       this.paneIndex = pane;
     }
+    else if (param === "sidebar") this.current = "sidebar";
     else this.current = "display";
     return this.current;
   },
@@ -34,13 +37,27 @@ export const Role = {
     return !!userId && setting("streamUser") === userId;
   },
 
-  /** Any stream client: the single-window display or a companion pane. */
+  /** Any stream client: the single-window display, a companion pane or the companion's sidebar. */
   get isDisplay() {
-    return (this.current === "display") || (this.current === "pane");
+    return ["display", "pane", "sidebar"].includes(this.current);
   },
 
   get isPane() {
     return this.current === "pane";
+  },
+
+  get isSidebar() {
+    return this.current === "sidebar";
+  },
+
+  /** Does this client draw panes on its canvas? */
+  get drawsPanes() {
+    return (this.current === "display") || (this.current === "pane");
+  },
+
+  /** Does this client show the chat column (and with it the calendar and tracker)? */
+  get showsChrome() {
+    return (this.current === "display") || (this.current === "sidebar");
   },
 
   /**

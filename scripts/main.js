@@ -10,6 +10,7 @@ import { syncHold } from "./display/hold.js";
 import { requestGmView, sendGmViewSoon } from "./display/gm-view.js";
 import { guardLevelSwitching } from "./display/levels.js";
 import { layoutFractions } from "./display/layouts.js";
+import { chatColumnWidth, syncChrome, watchCalendar } from "./display/chrome.js";
 import { PanePanel } from "./apps/pane-panel.js";
 import { listen } from "./socket.js";
 
@@ -18,11 +19,21 @@ Hooks.once("init", () => {
   registerKeybindings();
   // Early, so companion panes are known before the canvas (and its fog manager) is created.
   Role.detect();
-  if (Role.isPane && !Role.isLead) {
-    // Every pane is the same user and would overwrite the same explored-fog record; only pane 1 saves it.
+  if ((Role.isPane && !Role.isLead) || Role.isSidebar) {
+    // Every stream client is the same user and would overwrite the same explored-fog record; only pane 1 saves it.
     foundry.canvas.perception.FogManager.prototype.save = async function() {};
   }
 });
+
+/**
+ * The companion's chat layer keeps Foundry's canvas (Dice So Nice animates its dice on the canvas ticker) but never
+ * draws the scene: the board is hidden and its render call is taken off the ticker, so only the dice show.
+ */
+function stopSceneRendering() {
+  const app = canvas.app;
+  if (!Role.isSidebar || !app) return;
+  app.ticker.remove(app.render, app);
+}
 
 Hooks.once("ready", () => {
   Role.detect();
@@ -32,19 +43,24 @@ Hooks.once("ready", () => {
   document.body.classList.toggle("msv-display", Role.isDisplay);
   document.body.classList.toggle("msv-secondary", Role.isDisplay && !Role.isLead);
   document.body.classList.toggle("msv-companion", Role.isDisplay && !!Role.companion);
+  document.body.classList.toggle("msv-chrome", Role.showsChrome);
+  document.body.classList.toggle("msv-sidebar", Role.isSidebar);
   globalThis.MikirasStreamView = { diagnose: frames => MultiView.diagnose(frames) };
   guardLevelSwitching();
-  if (Role.isDisplay && canvas.ready) startDisplay();
+  stopSceneRendering();
+  if (Role.drawsPanes && canvas.ready) startDisplay();
+  syncChrome();
+  watchCalendar();
   syncCombatCarousel();
   syncHold();
   reportLayout();
 });
 
-/** In the companion app, pane 1 tells the app how many panes to show and where. */
+/** In the companion app, pane 1 tells the app how many panes to show, where, and how wide the chat column is. */
 function reportLayout() {
   if (!Role.isLead || !Role.companion) return;
   const { count } = game.settings.get(MODULE_ID, "panes");
-  Role.companion.setLayout({ count, fractions: layoutFractions(count) });
+  Role.companion.setLayout({ count, fractions: layoutFractions(count), chatWidth: chatColumnWidth() });
 }
 
 function registerKeybindings() {
@@ -75,8 +91,9 @@ function startDisplay() {
 }
 
 Hooks.on("canvasReady", () => {
-  if (Role.isDisplay) startDisplay();
-  else sendGmViewSoon();
+  stopSceneRendering();
+  if (Role.drawsPanes) startDisplay();
+  else if (!Role.isDisplay) sendGmViewSoon();
 });
 
 // The GM's camera, for "GM view" panes.
@@ -126,6 +143,7 @@ for (const hook of ["createUser", "updateUser", "deleteUser"]) Hooks.on(hook, po
 
 Hooks.on(`${MODULE_ID}.paneConfigChanged`, () => {
   PanePanel.refresh();
+  syncChrome();
   reportLayout();
 });
 

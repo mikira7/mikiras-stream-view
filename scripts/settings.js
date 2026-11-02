@@ -39,6 +39,27 @@ export function registerSettings() {
     default: true
   });
 
+  game.settings.register(MODULE_ID, "showChat", {
+    name: "MSV.Settings.ShowChat.Name",
+    hint: "MSV.Settings.ShowChat.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => Hooks.callAll(`${MODULE_ID}.paneConfigChanged`)
+  });
+
+  game.settings.register(MODULE_ID, "chatWidth", {
+    name: "MSV.Settings.ChatWidth.Name",
+    hint: "MSV.Settings.ChatWidth.Hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    range: { min: 260, max: 600, step: 10 },
+    default: 340,
+    onChange: () => Hooks.callAll(`${MODULE_ID}.paneConfigChanged`)
+  });
+
   game.settings.register(MODULE_ID, "holdMessage", {
     name: "MSV.Settings.HoldMessage.Name",
     hint: "MSV.Settings.HoldMessage.Hint",

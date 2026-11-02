@@ -14,6 +14,10 @@ point of view.
   yours.
 - **Combat carousel** along the top middle: portraits in turn order, coloured by side, dimmed once they've acted.
 - **Multi-level scenes:** the stream views the level you choose (follow pane 1, where most panes are, or your own).
+- **Chat column:** Foundry's chat log down the right of the stream (optional, adjustable width); the panes make room.
+- **STA 2e Toolkit:** its calendar sits at the top centre of the panes and its Momentum/Threat tracker docks beside
+  the chat; its combat HUD stays off the stream.
+- **Dice So Nice:** rolls show once across the whole stream.
 
 ## Setup
 
