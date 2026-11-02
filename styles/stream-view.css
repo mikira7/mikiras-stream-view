@@ -9,10 +9,12 @@ body.msv-display::-webkit-scrollbar {
 }
 
 /* Stream display: hide Foundry's UI except the chat column, and the STA 2e Toolkit's calendar and Momentum/Threat
-   tracker on clients that show them. The toolkit's combat HUD never shows. */
+   tracker on clients that show them. The toolkit's combat HUD and LCARS action ring never show (the ring's collapsed
+   toggle peeks over the top edge, and its shadow shows as a smudge over the panes). */
 body.msv-display #camera-views,
 body.msv-display #notifications,
-body.msv-display #sta2e-combat-hud {
+body.msv-display #sta2e-combat-hud,
+body.msv-display #sta2e-lcars-action-ring {
   display: none !important;
 }
 body.msv-display #interface {
