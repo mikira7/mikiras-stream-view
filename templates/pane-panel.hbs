@@ -36,8 +36,15 @@
       {{else}}
       <span class="msv-slot-token"></span>
       {{/if}}
+      {{#if isScene}}
+      <input class="msv-slot-zoom" type="number" name="slots.{{index}}.sceneZoom" min="50" max="1000" step="5"
+             value="{{sceneZoom}}" placeholder="100" data-zoom="scene"
+             data-tooltip="MSV.Panel.SceneZoomHint" aria-label="{{localize "MSV.Panel.Zoom"}}">
+      {{else}}
       <input class="msv-slot-zoom" type="number" name="slots.{{index}}.zoom" min="4" max="40" step="1" value="{{zoom}}"
-             placeholder="{{../defaultZoom}}" data-tooltip="MSV.Panel.ZoomHint" aria-label="{{localize "MSV.Panel.Zoom"}}">
+             placeholder="{{../defaultZoom}}" data-zoom="squares"
+             data-tooltip="MSV.Panel.ZoomHint" aria-label="{{localize "MSV.Panel.Zoom"}}">
+      {{/if}}
       {{#if warning}}
         <i class="msv-slot-warning fa-solid fa-triangle-exclamation" data-tooltip="{{warning}}"></i>
       {{/if}}
@@ -47,6 +54,15 @@
       {{/if}}
       <button type="button" class="icon fa-solid fa-rotate-left" data-action="clearSlot" data-index="{{index}}"
               data-tooltip="MSV.Panel.Clear" aria-label="{{localize "MSV.Panel.Clear"}}"></button>
+      {{#if slider}}
+      <div class="msv-slot-slider">
+        <i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i>
+        <input type="range" min="{{slider.min}}" max="{{slider.max}}" step="1" value="{{slider.value}}"
+               data-zoom="{{slider.kind}}" aria-label="{{localize "MSV.Panel.Zoom"}}"
+               data-tooltip="MSV.Panel.SliderHint">
+        <i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i>
+      </div>
+      {{/if}}
     </li>
     {{/each}}
   </ol>

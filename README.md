@@ -7,7 +7,8 @@ point of view.
 ## Features
 
 - **Split screen, 1–6 panes.** Each pane can follow a token (seeing only what it sees), the active combatant, the
-  whole party, your GM camera, or the whole scene. Per-pane zoom.
+  whole party, your GM camera, or the whole scene. Per-pane zoom, set with a slider or the mouse wheel in the panel,
+  or by scrolling over a pane in the stream window.
 - **Stream Panes panel** for the GM (Token controls → table-columns button): pane count, what each pane shows, a
   hold screen with your own message, and buttons to clear shown images and journals.
 - **Shown images and journals** appear on the stream and close themselves after a delay you choose, or when you close

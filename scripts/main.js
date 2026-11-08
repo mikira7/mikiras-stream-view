@@ -49,6 +49,8 @@ Hooks.once("ready", () => {
   guardLevelSwitching();
   stopSceneRendering();
   if (Role.drawsPanes && canvas.ready) startDisplay();
+  // With no scene to draw the pane stays black, which is as loaded as it gets.
+  else Companion.reportReady();
   syncChrome();
   watchCalendar();
   syncCombatCarousel();
@@ -88,6 +90,7 @@ function startDisplay() {
   if (!candidateDocuments().length) ui.notifications.warn("MSV.NoTokens", { localize: true });
   MultiView.enable();
   requestGmView();
+  Companion.reportReady();
 }
 
 Hooks.on("canvasReady", () => {

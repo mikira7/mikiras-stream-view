@@ -39,6 +39,15 @@ function sendSoon() {
 
 const absolute = url => (url ? new URL(url, window.location.href).href : url);
 
+/**
+ * Tell the app this pane has finished loading and drawn its picture, so it can lift the curtain over it. Waits two
+ * frames so the first render has reached the screen. Safe to call more than once.
+ */
+export function reportReady() {
+  if (!Role.isPane || !Role.companion?.setReady) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => Role.companion.setReady()));
+}
+
 export function setCarousel(data) {
   state.carousel = data;
   sendSoon();

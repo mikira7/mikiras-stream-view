@@ -277,6 +277,22 @@ body.msv-hold #msv-carousel {
   width: 48px;
   text-align: center;
 }
+.msv-pane-panel .msv-slot {
+  flex-wrap: wrap;
+}
+/* The zoom slider sits on its own line under the pane's controls, lined up with the mode select. */
+.msv-pane-panel .msv-slot-slider {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: calc(1.25rem + 32px + 12px);
+  opacity: 0.85;
+}
+.msv-pane-panel .msv-slot-slider input[type="range"] {
+  flex: 1;
+  min-width: 0;
+}
 .msv-pane-panel .msv-stream-controls {
   display: flex;
   flex-direction: column;

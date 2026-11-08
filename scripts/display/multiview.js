@@ -5,6 +5,7 @@ import { getGmView } from "./gm-view.js";
 import { syncLevel } from "./levels.js";
 import { Role } from "../role.js";
 import { chatColumnWidth } from "./chrome.js";
+import { installStreamWheelZoom, zoomOverride } from "./wheel-zoom.js";
 
 /** Key under which other tokens' vision sources are suppressed while a pane is drawn. */
 const SUPPRESSION_KEY = MODULE_ID;
@@ -111,9 +112,26 @@ export class MultiView {
     rec.resolve(rows);
   }
 
+  /** The pane rectangles from the last frame, for finding which pane is under the mouse. */
+  static #rects = [];
+
+  /**
+   * Which pane is under a point on the stream window, and how its camera works.
+   * @param {number} x
+   * @param {number} y
+   * @returns {{index: number, camera: string}|null}
+   */
+  static paneAt(x, y) {
+    const i = this.#rects.findIndex(r => r.contains(x, y));
+    const view = this.#panes[i]?.view;
+    if ((i < 0) || !view || view.empty || setting("hold")) return null;
+    return { index: Role.isPane ? Role.paneIndex : i, camera: view.camera };
+  }
+
   static enable() {
     if (this.#enabled) return;
     this.#enabled = true;
+    installStreamWheelZoom((x, y) => this.paneAt(x, y));
     this.#root.eventMode = "none";
     this.#root.addChild(this.#background, this.#fpsText);
     // PIXI's Application registers its render on the ticker at LOW priority; take its place.
@@ -152,6 +170,7 @@ export class MultiView {
     const count = Role.isPane ? 1 : setting("panes").count;
     const rects = Role.isPane ? [new PIXI.Rectangle(0, 0, width, height)]
       : layoutRects(count, Math.max(width - chatColumnWidth(), 1), height, GAP);
+    this.#rects = rects;
     this.#syncPanes(count, width, height);
 
     // On hold, the panes aren't drawn at all; the hold card covers the window.
@@ -342,7 +361,7 @@ export class MultiView {
   /** Where a pane's camera wants to be: a world point to centre on and a zoom scale. */
   static #cameraGoal(view, index, rect) {
     const slot = setting("panes").slots?.[index];
-    const squares = slot?.zoom || setting("paneZoom");
+    const squares = zoomOverride(index, "zoom") ?? (slot?.zoom || setting("paneZoom"));
     const tokenScale = rect.height / (squares * canvas.grid.size);
     const scene = canvas.dimensions.sceneRect;
     const fitScene = () => ({
@@ -351,7 +370,12 @@ export class MultiView {
       scale: Math.min(rect.width / scene.width, rect.height / scene.height) * 0.95
     });
 
-    if (view.camera === "scene") return fitScene();
+    if (view.camera === "scene") {
+      // A Whole scene pane can be zoomed in or out from the fitted view, centred on the scene.
+      const goal = fitScene();
+      goal.scale *= (zoomOverride(index, "sceneZoom") ?? (slot?.sceneZoom || 100)) / 100;
+      return goal;
+    }
 
     if (view.camera === "gm") {
       const gm = getGmView();
