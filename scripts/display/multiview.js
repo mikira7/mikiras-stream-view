@@ -25,6 +25,43 @@ const GROUP_PADDING = 2;
 /** Border drawn around the pane following the active combatant. */
 const HIGHLIGHT = { width: 4, color: 0xF0C040 };
 
+/** True while the panes are being drawn; FXMaster scene filters drop their screen-space mask then. */
+let drawingPanes = false;
+
+/** Marks a filter whose `apply` has already been wrapped. */
+const FXM_WRAPPED = Symbol(`${MODULE_ID}.fxmWrapped`);
+
+/**
+ * Keep FXMaster scene filters (Old Film, Color, Bloom…) covering the whole pane.
+ *
+ * FXMaster bakes the mask that confines a scene filter in screen space, for whatever the camera is when its own ticker
+ * runs, which is the stream user's camera, not a pane's. Every pane then sampled that mask at the wrong place and the
+ * filter covered only part of it. Rebuilding the mask per pane didn't take, so while the panes are drawn a scene filter
+ * whose mask is in screen space is applied without it. A mask FXMaster maps from world space is right at any camera and
+ * is kept. Called once per frame; wrapping is idempotent, and a new filter is wrapped the frame it appears.
+ */
+function wrapFxMasterFilters() {
+  const manager = globalThis.FXMASTER?.filters;
+  if (!manager?.filters) return;
+  const filters = [...Object.values(manager.filters), ...(manager._dyingFilters ?? [])];
+  for (const filter of filters) {
+    if (!filter || filter[FXM_WRAPPED] || (typeof filter.apply !== "function")) continue;
+    const apply = filter.apply;
+    filter.apply = function(...args) {
+      const u = this.uniforms;
+      if (!drawingPanes || !u || !(u.hasMask > 0.5) || (u.maskWorldReady > 0.5)) return apply.apply(this, args);
+      const hasMask = u.hasMask;
+      u.hasMask = 0;
+      try {
+        return apply.apply(this, args);
+      } finally {
+        u.hasMask = hasMask;
+      }
+    };
+    filter[FXM_WRAPPED] = true;
+  }
+}
+
 /**
  * Draws the stream window as a grid of panes, each from its own point of view.
  *
@@ -189,9 +226,12 @@ export class MultiView {
     this.#installOccluders();
     const stage = canvas.stage;
     const saved = { x: stage.pivot.x, y: stage.pivot.y, scale: stage.scale.x };
+    wrapFxMasterFilters();
+    drawingPanes = true;
     try {
       rects.forEach((rect, i) => this.#renderPane(this.#panes[i], Role.isPane ? Role.paneIndex : i, rect));
     } finally {
+      drawingPanes = false;
       this.#restoreSources();
       // Between frames, roofs fade around every pane's tokens, so Foundry's fade animations stay steady.
       this.#occluders = [...new Set(this.#panes.flatMap(p => p.view?.vision ?? []))];
